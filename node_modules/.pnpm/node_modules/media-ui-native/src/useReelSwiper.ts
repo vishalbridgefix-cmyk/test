@@ -41,11 +41,7 @@ export const useReelSwiper = <T extends HTMLElement = HTMLDivElement>({
   const getContainerProps = useCallback(
     () => ({
       ref: containerRef,
-      style: {
-        overflowY: 'scroll' as const,
-        scrollSnapType: 'y mandatory',
-        height: '100%', // Consumer usually overwrites or defines via CSS, but we provide inline base
-      },
+      style: {},
       tabIndex: 0,
       'aria-label': 'Video Reel',
     }),
@@ -54,10 +50,7 @@ export const useReelSwiper = <T extends HTMLElement = HTMLDivElement>({
 
   const getItemProps = useCallback(
     (index: number) => ({
-      style: {
-        scrollSnapAlign: 'start',
-        height: '100%', // Each item takes full height of container
-      },
+      style: {},
       'aria-hidden': index !== activeIndex,
     }),
     [activeIndex]

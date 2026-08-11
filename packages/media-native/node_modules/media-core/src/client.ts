@@ -1,7 +1,7 @@
 import { MediaConfig, PhotosResponse, VideosResponse, Photo, Video } from './types';
 import { EventEmitter } from './events';
 import { Cache } from './cache';
-import { handleApiError } from './errors';
+import { handleApiError, NetworkError } from './errors';
 
 export class MediaClient {
   private config: MediaConfig;
@@ -32,12 +32,15 @@ export class MediaClient {
         });
 
         if (!response.ok) {
-          return this.getMockResponse<T>(url);
+          handleApiError(response.status, response.statusText);
         }
 
         return await response.json();
-      } catch (error) {
-        return this.getMockResponse<T>(url);
+      } catch (error: any) {
+        if (error.name && error.name.endsWith('Error')) {
+          throw error;
+        }
+        throw new NetworkError();
       }
     });
   }

@@ -102,13 +102,7 @@ export const useReelSwiper = <ItemType = any, ContainerElem extends HTMLElement 
   const getContainerProps = useCallback(
     (userProps?: Record<string, any>) => ({
       ref: containerRef,
-      style: {
-        overflowY: 'scroll' as const,
-        scrollSnapType: 'y mandatory',
-        scrollbarWidth: 'none' as const,
-        msOverflowStyle: 'none' as const,
-        ...(userProps?.style || {}),
-      },
+      style: userProps?.style || {},
       tabIndex: userProps?.tabIndex ?? 0,
       'aria-label': userProps?.['aria-label'] ?? ariaLabel,
       className: `no-scrollbar ${userProps?.className || ''}`.trim(),
@@ -119,14 +113,7 @@ export const useReelSwiper = <ItemType = any, ContainerElem extends HTMLElement 
 
   const getItemProps = useCallback(
     (index: number, userProps?: Record<string, any>) => ({
-      style: {
-        scrollSnapAlign: 'start',
-        scrollSnapStop: 'always',
-        flex: '0 0 100%',
-        height: '100%',
-        width: '100%',
-        ...(userProps?.style || {}),
-      },
+      style: userProps?.style || {},
       'aria-hidden': index !== activeIndex,
       className: userProps?.className,
     }),

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Grid } from 'react-window';
-import { useSearch, useEvents } from 'media-react';
+import { useSearch, useEvents, type Photo } from 'media-react';
 import { useGrid, useLightbox } from 'media-ui-react';
 import { ReelsView } from './ReelsView';
 import './App.css';
@@ -17,7 +17,7 @@ const App = () => {
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
 
   const { search, loading, error, photosResult, videosResult } = useSearch();
-  const { trackView } = useEvents();
+  const { trackView, trackDownload } = useEvents();
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
@@ -196,7 +196,7 @@ const App = () => {
 // --- Cell Renderer & Props for Virtualized Photo Grid ---
 
 interface PhotoCellCustomProps {
-  photos: any[];
+  photos: Photo[];
   columnCount: number;
   onPhotoClick: (index: number, id: number) => void;
   likedPhotos: Record<number, boolean>;
@@ -265,7 +265,7 @@ function PhotoCell({
 // --- Virtualized Photo Grid Component using react-window ---
 
 interface VirtualizedPhotoGridProps {
-  photos: any[];
+  photos: Photo[];
   loading: boolean;
   hasNextPage: boolean;
   onLoadMore: () => void;
@@ -373,7 +373,14 @@ const VirtualizedPhotoGrid: React.FC<VirtualizedPhotoGridProps> = ({
 
 // --- Interactive Lightbox Modal Component ---
 
-const PhotoLightbox = ({ photos, isOpen, initialIndex, onClose, likedPhotos, onToggleLike }: any) => {
+const PhotoLightbox = ({ photos, isOpen, initialIndex, onClose, likedPhotos, onToggleLike }: {
+  photos: Photo[];
+  isOpen: boolean;
+  initialIndex: number;
+  onClose: () => void;
+  likedPhotos: Record<number, boolean>;
+  onToggleLike: (id: number, e: React.MouseEvent) => void;
+}) => {
   const {
     currentIndex,
     getBackdropProps,
@@ -387,6 +394,8 @@ const PhotoLightbox = ({ photos, isOpen, initialIndex, onClose, likedPhotos, onT
     totalItems: photos.length,
     initialIndex
   });
+
+  const { trackDownload } = useEvents();
 
   if (!isOpen || !photos[currentIndex]) return null;
 
@@ -468,6 +477,7 @@ const PhotoLightbox = ({ photos, isOpen, initialIndex, onClose, likedPhotos, onT
               rel="noopener noreferrer"
               className="download-btn"
               style={{ background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}
+              onClick={() => trackDownload('image', currentPhoto.id)}
             >
               ⬇ Download Original ({currentPhoto.width}px)
             </a>

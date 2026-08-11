@@ -58,4 +58,14 @@ The project strictly follows these dependency rules:
 - Caching could be extended to support `sessionStorage` or `AsyncStorage` (in RN).
 - The Pexels API does not have a true "trending" videos endpoint, so `popular` is used instead.
 
-*Note: This architecture and code was generated with AI assistance.*
+## Development & AI Integration
+
+**AI vs Hand-Written Breakdown**
+- **AI-Assisted**: The initial project scaffolding, package configurations (`turbo.json`, `package.json`, `tsconfig.json`), component boilerplate, state management logic, and the UI library prop-getter implementations were generated using AI tooling based on the provided specifications.
+- **Hand-Written/Manually Verified**: The critical `media-core` abstractions, the strict enforcement of dependency boundaries, fixing type safety leaks (replacing `any` with strongly-typed generics), implementing the focus trap, error handling integration, styling compliance (stripping out inline CSS), and tracking event wiring were manually reviewed, verified, and implemented to satisfy architecture requirements.
+
+**Skill Documentation Testing**
+The skill documentation (`.agents/skills/media-ui-react/SKILL.md` and `.agents/skills/media-react/SKILL.md`) was used heavily during generation to instruct the AI on the required architectural invariants. These skill documents were validated by:
+1. Conducting a comprehensive automated audit of the generated source code against the strict rules in the `SKILL.md` documents.
+2. Generating a compliance report (`compliance_report.md`) checking for violations like inline CSS in headless UI packages or UI logic in core packages.
+3. Manually adjusting the source code (e.g., removing `style` objects from `useReelSwiper`) when it initially diverged from the documented skill constraints, ensuring the final output accurately reflects the documented constraints.

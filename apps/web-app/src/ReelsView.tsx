@@ -14,6 +14,7 @@ import {
   Share2,
   Volume2,
   VolumeX,
+  Download,
 } from 'lucide-react';
 import { useEvents, type Video } from 'media-react';
 import { useReelSwiper } from 'media-ui-react';
@@ -31,7 +32,7 @@ export const ReelsView: React.FC<ReelsViewProps> = ({
   isAppending,
   onLoadMore,
 }) => {
-  const { emit } = useEvents();
+  const { emit, trackDownload } = useEvents();
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const swiper = useReelSwiper<Video>({
@@ -81,40 +82,58 @@ export const ReelsView: React.FC<ReelsViewProps> = ({
       <div
         {...swiper.getContainerProps({
           className:
-            'relative w-full max-w-[360px] sm:max-w-[400px] h-[75vh] max-h-[720px] min-h-[500px] bg-black rounded-[32px] overflow-hidden shadow-2xl border border-white/15 focus:outline-none focus:ring-2 focus:ring-indigo-500 m-auto no-scrollbar',
+            'reel-container relative w-full max-w-[360px] sm:max-w-[400px] h-[75vh] max-h-[720px] min-h-[500px] bg-black rounded-[32px] overflow-x-hidden shadow-2xl border border-white/15 focus:outline-none focus:ring-2 focus:ring-indigo-500 m-auto no-scrollbar'
         })}
       >
-        {/* Poster Fallback Background */}
-        {activeVideo.image && (
-          <img 
-            src={activeVideo.image} 
-            alt={activeVideo.user?.name || 'Reel background'} 
-            className="absolute inset-0 w-full h-full object-cover z-0" 
-          />
-        )}
+        {videos.map((video, index) => {
+          const isVideoActive = index === swiper.currentIndex;
+          const videoFileLink = video.video_files?.[0]?.link;
 
-        {/* Active Video Player */}
-        <video
-          ref={videoRef}
-          src={videoFile}
-          loop
-          muted={swiper.isMuted}
-          playsInline
-          className="relative w-full h-full object-cover cursor-pointer z-1"
-          onClick={swiper.togglePlay}
-        />
+          return (
+            <div
+              key={video.id}
+              {...swiper.getItemProps(index, {
+                className: 'reel-item relative w-full h-full flex-shrink-0 flex items-center justify-center bg-black'
+              })}
+            >
+              {/* Poster Fallback Background */}
+              {video.image && (
+                <img 
+                  src={video.image} 
+                  alt={video.user?.name || 'Reel background'} 
+                  className="absolute inset-0 w-full h-full object-cover z-0" 
+                />
+              )}
 
-        {/* Play/Pause Overlay Indicator when paused */}
-        {!swiper.isPlaying && (
-          <button
-            {...swiper.getPlayPauseProps({
-              className:
-                'absolute inset-0 m-auto w-16 h-16 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-lg pointer-events-auto z-20 cursor-pointer',
-            })}
-          >
-            <Play className="w-8 h-8 ml-1 text-white" />
-          </button>
-        )}
+              {/* Active Video Player */}
+              {isVideoActive ? (
+                <video
+                  ref={videoRef}
+                  src={videoFileLink}
+                  loop
+                  muted={swiper.isMuted}
+                  playsInline
+                  className="relative w-full h-full object-cover cursor-pointer z-10"
+                  onClick={swiper.togglePlay}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-black/50 z-10"></div>
+              )}
+
+              {/* Play/Pause Overlay Indicator when paused */}
+              {isVideoActive && !swiper.isPlaying && (
+                <button
+                  {...swiper.getPlayPauseProps({
+                    className:
+                      'absolute inset-0 m-auto w-16 h-16 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center border border-white/20 shadow-lg pointer-events-auto z-20 cursor-pointer',
+                  })}
+                >
+                  <Play className="w-8 h-8 ml-1 text-white" />
+                </button>
+              )}
+            </div>
+          );
+        })}
 
         {/* Top Control Bar */}
         <div className="absolute top-4 inset-x-4 flex items-center justify-between text-white z-20">
@@ -160,6 +179,17 @@ export const ReelsView: React.FC<ReelsViewProps> = ({
               <Share2 className="w-7 h-7 text-white drop-shadow-md" />
             </div>
             <span className="text-[11px] font-semibold text-white drop-shadow-md">Share</span>
+          </button>
+
+          <button 
+            style={{ background: 'transparent', border: 'none', boxShadow: 'none' }} 
+            className="flex flex-col items-center group cursor-pointer p-0"
+            onClick={() => activeVideo && trackDownload('video', activeVideo.id)}
+          >
+            <div className="flex items-center justify-center p-2 rounded-full transition-transform hover:scale-110">
+              <Download className="w-7 h-7 text-white drop-shadow-md" />
+            </div>
+            <span className="text-[11px] font-semibold text-white drop-shadow-md">Save</span>
           </button>
         </div>
 
