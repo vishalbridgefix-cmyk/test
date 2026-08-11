@@ -8,19 +8,12 @@ export declare const useReelSwiper: <T extends HTMLElement = HTMLDivElement>({ t
     activeIndex: number;
     getContainerProps: () => {
         ref: import("react").MutableRefObject<T | null>;
-        style: {
-            overflowY: "scroll";
-            scrollSnapType: string;
-            height: string;
-        };
+        style: {};
         tabIndex: number;
         'aria-label': string;
     };
     getItemProps: (index: number) => {
-        style: {
-            scrollSnapAlign: string;
-            height: string;
-        };
+        style: {};
         'aria-hidden': boolean;
     };
 };

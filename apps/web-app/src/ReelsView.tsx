@@ -74,7 +74,7 @@ export const ReelsView: React.FC<ReelsViewProps> = ({
     );
   }
 
-  const videoFile = activeVideo.video_files?.[0]?.link;
+
 
   return (
     <div className="w-full flex-1 flex items-center justify-center p-2 overflow-hidden">

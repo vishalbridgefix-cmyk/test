@@ -24,7 +24,7 @@ export const useLightbox = ({ isOpen, onClose, totalItems, initialIndex = 0 }: U
     setCurrentIndex((prev) => (prev - 1 + totalItems) % totalItems);
   }, [totalItems]);
 
-  const containerRef = useRef<HTMLElement | null>(null);
+  const containerRef = useRef<any>(null);
 
   useEffect(() => {
     if (!isOpen) return;

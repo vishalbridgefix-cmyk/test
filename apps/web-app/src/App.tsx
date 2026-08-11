@@ -15,9 +15,8 @@ const App = () => {
   const [page, setPage] = useState(1);
   const [perPage] = useState(30);
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
-
   const { search, loading, error, photosResult, videosResult } = useSearch();
-  const { trackView, trackDownload } = useEvents();
+  const { trackView } = useEvents();
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
@@ -396,7 +395,6 @@ const PhotoLightbox = ({ photos, isOpen, initialIndex, onClose, likedPhotos, onT
   });
 
   const { trackDownload } = useEvents();
-
   if (!isOpen || !photos[currentIndex]) return null;
 
   const currentPhoto = photos[currentIndex];

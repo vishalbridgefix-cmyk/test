@@ -15,6 +15,7 @@ export declare const useLightbox: ({ isOpen, onClose, totalItems, initialIndex }
         'aria-label': string;
     };
     getContainerProps: () => {
+        ref: import("react").MutableRefObject<any>;
         onClick: (e: React.MouseEvent) => void;
         tabIndex: number;
     };

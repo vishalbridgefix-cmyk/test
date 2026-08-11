@@ -66,28 +66,14 @@ export const useReelSwiper = (props) => {
     }, [activeIndex, totalItems, handleIndexChange]);
     const getContainerProps = useCallback((userProps) => ({
         ref: containerRef,
-        style: {
-            overflowY: 'scroll',
-            scrollSnapType: 'y mandatory',
-            scrollbarWidth: 'none',
-            height: "72vh",
-            msOverflowStyle: 'none',
-            ...(userProps?.style || {}),
-        },
+        style: userProps?.style || {},
         tabIndex: userProps?.tabIndex ?? 0,
         'aria-label': userProps?.['aria-label'] ?? ariaLabel,
         className: `no-scrollbar ${userProps?.className || ''}`.trim(),
         onClick: userProps?.onClick,
     }), [ariaLabel]);
     const getItemProps = useCallback((index, userProps) => ({
-        style: {
-            scrollSnapAlign: 'start',
-            scrollSnapStop: 'always',
-            flex: '0 0 100%',
-            height: '100%',
-            width: '100%',
-            ...(userProps?.style || {}),
-        },
+        style: userProps?.style || {},
         'aria-hidden': index !== activeIndex,
         className: userProps?.className,
     }), [activeIndex]);

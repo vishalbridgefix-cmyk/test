@@ -1,5 +1,6 @@
 import { EventEmitter } from './events';
 import { Cache } from './cache';
+import { handleApiError, NetworkError } from './errors';
 export class MediaClient {
     config;
     events;
@@ -26,12 +27,15 @@ export class MediaClient {
                     },
                 });
                 if (!response.ok) {
-                    return this.getMockResponse(url);
+                    handleApiError(response.status, response.statusText);
                 }
                 return await response.json();
             }
             catch (error) {
-                return this.getMockResponse(url);
+                if (error.name && error.name.endsWith('Error')) {
+                    throw error;
+                }
+                throw new NetworkError();
             }
         });
     }

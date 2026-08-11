@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 export const useLightbox = ({ isOpen, onClose, totalItems, initialIndex = 0 }) => {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
     useEffect(() => {
@@ -12,9 +12,13 @@ export const useLightbox = ({ isOpen, onClose, totalItems, initialIndex = 0 }) =
     const prev = useCallback(() => {
         setCurrentIndex((prev) => (prev - 1 + totalItems) % totalItems);
     }, [totalItems]);
+    const containerRef = useRef(null);
     useEffect(() => {
         if (!isOpen)
             return;
+        if (containerRef.current) {
+            containerRef.current.focus();
+        }
         const handleKeyDown = (e) => {
             if (e.key === 'Escape')
                 onClose();
@@ -22,6 +26,27 @@ export const useLightbox = ({ isOpen, onClose, totalItems, initialIndex = 0 }) =
                 next();
             if (e.key === 'ArrowLeft')
                 prev();
+            if (e.key === 'Tab') {
+                if (!containerRef.current)
+                    return;
+                const focusableElements = containerRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (focusableElements.length === 0)
+                    return;
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === firstElement || document.activeElement === containerRef.current) {
+                        lastElement.focus();
+                        e.preventDefault();
+                    }
+                }
+                else {
+                    if (document.activeElement === lastElement) {
+                        firstElement.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
@@ -33,6 +58,7 @@ export const useLightbox = ({ isOpen, onClose, totalItems, initialIndex = 0 }) =
         'aria-label': 'Image Lightbox',
     }), [onClose]);
     const getContainerProps = useCallback(() => ({
+        ref: containerRef,
         onClick: (e) => e.stopPropagation(),
         tabIndex: -1,
     }), []);
