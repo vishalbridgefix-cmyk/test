@@ -1,34 +1,61 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 
-export interface UseReelSwiperProps {
-  totalItems: number;
+export interface UseReelSwiperProps<T = any> {
+  items?: T[];
+  totalItems?: number;
+  autoPlay?: boolean;
+  onIndexChange?: (index: number, item: T) => void;
+  ariaLabel?: string;
   onLoadMore?: () => void;
   loading?: boolean;
   hasNextPage?: boolean;
 }
 
-export const useReelSwiper = <T extends HTMLElement = HTMLDivElement>({ 
-  totalItems, 
-  onLoadMore, 
-  loading, 
-  hasNextPage 
-}: UseReelSwiperProps) => {
+export const useReelSwiper = <ItemType = any, ContainerElem extends HTMLElement = HTMLDivElement>(
+  props: UseReelSwiperProps<ItemType>
+) => {
+  const {
+    items = [],
+    totalItems: inputTotal,
+    autoPlay = true,
+    onIndexChange,
+    ariaLabel = 'Video Reel',
+    onLoadMore,
+    loading,
+    hasNextPage,
+  } = props;
+
+  const totalItems = inputTotal ?? items.length;
   const [activeIndex, setActiveIndex] = useState(0);
-  const containerRef = useRef<T | null>(null);
+  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const [isMuted, setIsMuted] = useState(true);
+  const containerRef = useRef<ContainerElem | null>(null);
+
+  const activeItem = items[activeIndex] || null;
+
+  const handleIndexChange = useCallback(
+    (newIndex: number) => {
+      setActiveIndex(newIndex);
+      if (onIndexChange && items[newIndex]) {
+        onIndexChange(newIndex, items[newIndex]);
+      }
+    },
+    [items, onIndexChange]
+  );
 
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
     const { scrollTop, clientHeight } = containerRef.current;
+    if (clientHeight === 0) return;
     const index = Math.round(scrollTop / clientHeight);
     if (index !== activeIndex && index >= 0 && index < totalItems) {
-      setActiveIndex(index);
+      handleIndexChange(index);
     }
-    
-    // Trigger load more when near the end (e.g. 2 items away)
+
     if (hasNextPage && !loading && onLoadMore && index >= totalItems - 2) {
       onLoadMore();
     }
-  }, [activeIndex, totalItems, hasNextPage, loading, onLoadMore]);
+  }, [activeIndex, totalItems, hasNextPage, loading, onLoadMore, handleIndexChange]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -38,34 +65,147 @@ export const useReelSwiper = <T extends HTMLElement = HTMLDivElement>({
     }
   }, [handleScroll]);
 
+  const togglePlay = useCallback(() => {
+    setIsPlaying(prev => !prev);
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => !prev);
+  }, []);
+
+  const goToPrevious = useCallback(() => {
+    if (activeIndex > 0) {
+      const prevIndex = activeIndex - 1;
+      handleIndexChange(prevIndex);
+      if (containerRef.current) {
+        containerRef.current.scrollTo({
+          top: prevIndex * containerRef.current.clientHeight,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [activeIndex, handleIndexChange]);
+
+  const goToNext = useCallback(() => {
+    if (activeIndex < totalItems - 1) {
+      const nextIndex = activeIndex + 1;
+      handleIndexChange(nextIndex);
+      if (containerRef.current) {
+        containerRef.current.scrollTo({
+          top: nextIndex * containerRef.current.clientHeight,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [activeIndex, totalItems, handleIndexChange]);
+
   const getContainerProps = useCallback(
-    () => ({
+    (userProps?: Record<string, any>) => ({
       ref: containerRef,
       style: {
         overflowY: 'scroll' as const,
         scrollSnapType: 'y mandatory',
-        height: '100%', // Consumer usually overwrites or defines via CSS, but we provide inline base
+        scrollbarWidth: 'none' as const,
+        msOverflowStyle: 'none' as const,
+        ...(userProps?.style || {}),
       },
-      tabIndex: 0,
-      'aria-label': 'Video Reel',
+      tabIndex: userProps?.tabIndex ?? 0,
+      'aria-label': userProps?.['aria-label'] ?? ariaLabel,
+      className: `no-scrollbar ${userProps?.className || ''}`.trim(),
+      onClick: userProps?.onClick,
     }),
-    []
+    [ariaLabel]
   );
 
   const getItemProps = useCallback(
-    (index: number) => ({
+    (index: number, userProps?: Record<string, any>) => ({
       style: {
         scrollSnapAlign: 'start',
-        height: '100%', // Each item takes full height of container
+        scrollSnapStop: 'always',
+        flex: '0 0 100%',
+        height: '100%',
+        width: '100%',
+        ...(userProps?.style || {}),
       },
       'aria-hidden': index !== activeIndex,
+      className: userProps?.className,
     }),
     [activeIndex]
   );
 
+  const getPlayPauseProps = useCallback(
+    (userProps?: Record<string, any>) => ({
+      type: 'button' as const,
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        togglePlay();
+        userProps?.onClick?.(e);
+      },
+      'aria-label': isPlaying ? 'Pause video' : 'Play video',
+      className: userProps?.className,
+    }),
+    [isPlaying, togglePlay]
+  );
+
+  const getMuteProps = useCallback(
+    (userProps?: Record<string, any>) => ({
+      type: 'button' as const,
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        toggleMute();
+        userProps?.onClick?.(e);
+      },
+      'aria-label': isMuted ? 'Unmute video' : 'Mute video',
+      className: userProps?.className,
+    }),
+    [isMuted, toggleMute]
+  );
+
+  const getPreviousProps = useCallback(
+    (userProps?: Record<string, any>) => ({
+      type: 'button' as const,
+      disabled: activeIndex === 0,
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        goToPrevious();
+        userProps?.onClick?.(e);
+      },
+      'aria-label': 'Previous Reel',
+      className: userProps?.className,
+    }),
+    [activeIndex, goToPrevious]
+  );
+
+  const getNextProps = useCallback(
+    (userProps?: Record<string, any>) => ({
+      type: 'button' as const,
+      disabled: activeIndex >= totalItems - 1,
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation();
+        goToNext();
+        userProps?.onClick?.(e);
+      },
+      'aria-label': 'Next Reel',
+      className: userProps?.className,
+    }),
+    [activeIndex, totalItems, goToNext]
+  );
+
   return {
     activeIndex,
+    currentIndex: activeIndex,
+    activeItem,
+    isPlaying,
+    isMuted,
+    togglePlay,
+    toggleMute,
+    goToPrevious,
+    goToNext,
     getContainerProps,
     getItemProps,
+    getPlayPauseProps,
+    getMuteProps,
+    getPreviousProps,
+    getNextProps,
   };
 };

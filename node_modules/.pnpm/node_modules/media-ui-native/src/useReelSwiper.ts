@@ -7,11 +7,11 @@ export interface UseReelSwiperProps {
   hasNextPage?: boolean;
 }
 
-export const useReelSwiper = <T extends HTMLElement = HTMLDivElement>({ 
-  totalItems, 
-  onLoadMore, 
-  loading, 
-  hasNextPage 
+export const useReelSwiper = <T extends HTMLElement = HTMLDivElement>({
+  totalItems,
+  onLoadMore,
+  loading,
+  hasNextPage
 }: UseReelSwiperProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<T | null>(null);
@@ -23,7 +23,7 @@ export const useReelSwiper = <T extends HTMLElement = HTMLDivElement>({
     if (index !== activeIndex && index >= 0 && index < totalItems) {
       setActiveIndex(index);
     }
-    
+
     // Trigger load more when near the end (e.g. 2 items away)
     if (hasNextPage && !loading && onLoadMore && index >= totalItems - 2) {
       onLoadMore();

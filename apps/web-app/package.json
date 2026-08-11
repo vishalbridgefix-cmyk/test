@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@types/react-window": "^2.0.0",
+    "lucide-react": "^1.31.0",
+    "media-core": "workspace:*",
     "media-react": "workspace:*",
     "media-ui-react": "workspace:*",
     "react": "^19.2.8",

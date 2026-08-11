@@ -8,6 +8,7 @@ export declare class MediaClient {
     private videoBaseUrl;
     constructor(config: MediaConfig);
     private fetch;
+    private getMockResponse;
     searchPhotos(query: string, page?: number, perPage?: number): Promise<PhotosResponse>;
     getCuratedPhotos(page?: number, perPage?: number): Promise<PhotosResponse>;
     getPhotoById(id: number): Promise<Photo>;

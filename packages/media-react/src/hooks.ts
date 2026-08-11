@@ -120,5 +120,12 @@ export const useEvents = () => {
     [client]
   );
 
-  return { trackView, trackDownload, events: client.events };
+  const emit = useCallback(
+    (event: string, payload?: any) => {
+      client.events.emit(event, payload);
+    },
+    [client]
+  );
+
+  return { trackView, trackDownload, emit, events: client.events };
 };

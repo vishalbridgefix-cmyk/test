@@ -20,5 +20,6 @@ export declare const useVideos: () => {
 export declare const useEvents: () => {
     trackView: (type: "image" | "video", id: number) => void;
     trackDownload: (type: "image" | "video", id: number) => void;
+    emit: (event: string, payload?: any) => void;
     events: EventEmitter;
 };
